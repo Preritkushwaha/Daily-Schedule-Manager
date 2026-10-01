@@ -1,0 +1,12 @@
+**/.git
+**/.gitignore
+**/node_modules
+**/target
+**/*.mv.db
+**/*.trace.db
+**/application-local.properties
+**/*-local.properties
+**/.env
+**/.env.*
+**/.idea
+**/.vscode

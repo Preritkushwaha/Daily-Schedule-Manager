@@ -1,0 +1,15 @@
+target/
+.mvn/
+mvnw
+mvnw.cmd
+application-local.properties
+*-local.properties
+.env
+.env.*
+data/
+*.mv.db
+*.trace.db
+.git
+.gitignore
+.idea
+.vscode
