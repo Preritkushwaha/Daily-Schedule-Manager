@@ -9,6 +9,12 @@ data/
 *.mv.db
 *.trace.db
 
+# Secrets & Local Properties
+application-local.properties
+*-local.properties
+.env
+.env.*
+
 ### STS ###
 .apt_generated
 .classpath

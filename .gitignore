@@ -4,6 +4,13 @@ backend/data/
 *.trace.db
 data/
 
+# Secrets & Local Properties
+application-local.properties
+*-local.properties
+backend/src/main/resources/application-local.properties
+.env
+.env.*
+
 # Backend Build & Dependencies
 backend/target/
 backend/.mvn/wrapper/maven-wrapper.jar
