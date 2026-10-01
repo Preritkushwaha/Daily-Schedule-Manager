@@ -3,10 +3,13 @@ package com.schedule.dailyschedule.config;
 import com.schedule.dailyschedule.model.Activity;
 import com.schedule.dailyschedule.model.ActivityPriority;
 import com.schedule.dailyschedule.model.ActivityStatus;
+import com.schedule.dailyschedule.model.User;
 import com.schedule.dailyschedule.repository.ActivityRepository;
+import com.schedule.dailyschedule.repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -16,10 +19,21 @@ import java.util.List;
 public class DataInitializer {
 
     @Bean
-    public CommandLineRunner initDatabase(ActivityRepository repository) {
+    public CommandLineRunner initDatabase(UserRepository userRepository,
+                                          ActivityRepository activityRepository,
+                                          PasswordEncoder passwordEncoder) {
         return args -> {
+            String demoEmail = "prerit@example.com";
+            User demoUser = userRepository.findByEmailIgnoreCase(demoEmail).orElseGet(() -> {
+                User user = new User();
+                user.setName("Prerit");
+                user.setEmail(demoEmail);
+                user.setPassword(passwordEncoder.encode("password123"));
+                return userRepository.save(user);
+            });
+
             LocalDate today = LocalDate.now();
-            if (repository.countByScheduleDate(today) == 0) {
+            if (activityRepository.countByUserAndScheduleDate(demoUser, today) == 0) {
                 List<Activity> sampleActivities = List.of(
                         new Activity(
                                 "Morning Stretch & Hydration",
@@ -30,7 +44,8 @@ public class DataInitializer {
                                 ActivityStatus.COMPLETED,
                                 ActivityPriority.MEDIUM,
                                 "Health",
-                                1
+                                1,
+                                demoUser
                         ),
                         new Activity(
                                 "Daily Standup & Task Planning",
@@ -41,7 +56,8 @@ public class DataInitializer {
                                 ActivityStatus.COMPLETED,
                                 ActivityPriority.HIGH,
                                 "Work",
-                                2
+                                2,
+                                demoUser
                         ),
                         new Activity(
                                 "Deep Work: Build REST API & Dashboard",
@@ -52,7 +68,8 @@ public class DataInitializer {
                                 ActivityStatus.ONGOING,
                                 ActivityPriority.HIGH,
                                 "Work",
-                                3
+                                3,
+                                demoUser
                         ),
                         new Activity(
                                 "Healthy Lunch & Fresh Air Walk",
@@ -63,7 +80,8 @@ public class DataInitializer {
                                 ActivityStatus.NOT_STARTED,
                                 ActivityPriority.LOW,
                                 "Health",
-                                4
+                                4,
+                                demoUser
                         ),
                         new Activity(
                                 "Code Review & PR Feedback",
@@ -74,7 +92,8 @@ public class DataInitializer {
                                 ActivityStatus.NOT_STARTED,
                                 ActivityPriority.MEDIUM,
                                 "Work",
-                                5
+                                5,
+                                demoUser
                         ),
                         new Activity(
                                 "Study: Distributed Systems Reading",
@@ -85,10 +104,11 @@ public class DataInitializer {
                                 ActivityStatus.NOT_STARTED,
                                 ActivityPriority.LOW,
                                 "Study",
-                                6
+                                6,
+                                demoUser
                         )
                 );
-                repository.saveAll(sampleActivities);
+                activityRepository.saveAll(sampleActivities);
             }
         };
     }

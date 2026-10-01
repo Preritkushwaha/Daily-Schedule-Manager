@@ -1,5 +1,6 @@
 package com.schedule.dailyschedule.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -12,6 +13,11 @@ public class Activity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    @JsonIgnore
+    private User user;
 
     @Column(nullable = false)
     private String title;
@@ -52,7 +58,7 @@ public class Activity {
     }
 
     public Activity(String title, String description, LocalDate scheduleDate, LocalTime startTime, LocalTime endTime,
-                    ActivityStatus status, ActivityPriority priority, String category, Integer orderIndex) {
+                    ActivityStatus status, ActivityPriority priority, String category, Integer orderIndex, User user) {
         this.title = title;
         this.description = description;
         this.scheduleDate = scheduleDate;
@@ -62,6 +68,7 @@ public class Activity {
         this.priority = priority != null ? priority : ActivityPriority.MEDIUM;
         this.category = (category != null && !category.isBlank()) ? category.trim() : "General";
         this.orderIndex = orderIndex != null ? orderIndex : 0;
+        this.user = user;
     }
 
     @PrePersist
@@ -95,6 +102,14 @@ public class Activity {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public String getTitle() {

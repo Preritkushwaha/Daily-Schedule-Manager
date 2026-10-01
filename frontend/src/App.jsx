@@ -18,6 +18,8 @@ import ActivityItem from './components/ActivityItem';
 import ActivityBoard from './components/ActivityBoard';
 import TimelineView from './components/TimelineView';
 import ActivityModal from './components/ActivityModal';
+import AuthScreen from './components/AuthScreen';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import {
   getActivities,
   getDailySummary,
@@ -35,7 +37,9 @@ function getTodayIso() {
   return `${year}-${month}-${day}`;
 }
 
-export default function App() {
+function ScheduleWorkspace() {
+  const { user, loading: authLoading, isAuthenticated } = useAuth();
+
   const [selectedDate, setSelectedDate] = useState(getTodayIso);
   const [activities, setActivities] = useState([]);
   const [summary, setSummary] = useState(null);
@@ -61,6 +65,8 @@ export default function App() {
   };
 
   const loadData = useCallback(async () => {
+    if (!isAuthenticated) return;
+
     try {
       setLoading(true);
       setError(null);
@@ -78,11 +84,13 @@ export default function App() {
       setSummary(summaryData);
     } catch (err) {
       console.error('Error fetching activities:', err);
-      setError('Failed to connect to the backend server. Please verify Spring Boot is running on port 8080.');
+      if (err.message !== 'Unauthorized') {
+        setError('Failed to connect to backend server or retrieve schedule.');
+      }
     } finally {
       setLoading(false);
     }
-  }, [selectedDate, statusFilter, categoryFilter]);
+  }, [isAuthenticated, selectedDate, statusFilter, categoryFilter]);
 
   useEffect(() => {
     loadData();
@@ -143,6 +151,19 @@ export default function App() {
     }
   };
 
+  if (authLoading) {
+    return (
+      <div className="loading-spinner" style={{ minHeight: '100vh' }}>
+        <RefreshCw size={20} className="spin" />
+        <span>Loading workspace...</span>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <AuthScreen />;
+  }
+
   // Filter activities by client search query
   const filteredActivities = activities.filter((act) => {
     if (!searchQuery.trim()) return true;
@@ -174,7 +195,7 @@ export default function App() {
           <div className="page-icon-wrapper">📅</div>
           <h1 className="page-title">Daily Schedule</h1>
           <p className="page-description">
-            Focus on what matters today. Track your activities across Not Started, Ongoing, and Completed.
+            Focus on what matters today, {user?.name}. Your activities are private to your account.
           </p>
 
           {/* Daily Progress Tracker */}
@@ -230,7 +251,7 @@ export default function App() {
               />
             </div>
 
-            {/* Quick Status Dropdown (especially helpful on mobile/compact screens) */}
+            {/* Quick Status Dropdown */}
             <select
               className="select-filter"
               value={statusFilter}
@@ -254,7 +275,7 @@ export default function App() {
           </div>
         </div>
 
-        {/* Quick Add Bar (Todoist-inspired inline entry) */}
+        {/* Quick Add Bar */}
         <QuickAddBar
           selectedDate={selectedDate}
           onAddActivity={handleAddActivity}
@@ -277,7 +298,7 @@ export default function App() {
           >
             <AlertCircle size={20} />
             <div>
-              <strong>Backend Connection Notice:</strong> {error}
+              <strong>Notice:</strong> {error}
             </div>
           </div>
         ) : loading && activities.length === 0 ? (
@@ -345,5 +366,13 @@ export default function App() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <ScheduleWorkspace />
+    </AuthProvider>
   );
 }

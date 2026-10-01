@@ -5,8 +5,8 @@ import com.schedule.dailyschedule.dto.ActivityResponse;
 import com.schedule.dailyschedule.dto.DailySummaryResponse;
 import com.schedule.dailyschedule.exception.ResourceNotFoundException;
 import com.schedule.dailyschedule.model.Activity;
-import com.schedule.dailyschedule.model.ActivityPriority;
 import com.schedule.dailyschedule.model.ActivityStatus;
+import com.schedule.dailyschedule.model.User;
 import com.schedule.dailyschedule.repository.ActivityRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,16 +26,19 @@ public class ActivityService {
     }
 
     @Transactional(readOnly = true)
-    public List<ActivityResponse> getActivities(LocalDate date, ActivityStatus status, String category) {
+    public List<ActivityResponse> getActivities(User user, LocalDate date, ActivityStatus status, String category) {
         LocalDate targetDate = (date != null) ? date : LocalDate.now();
         List<Activity> activities;
 
         if (status != null) {
-            activities = activityRepository.findByScheduleDateAndStatusOrderByStartTimeAscOrderIndexAscCreatedAtAsc(targetDate, status);
+            activities = activityRepository.findByUserAndScheduleDateAndStatusOrderByStartTimeAscOrderIndexAscCreatedAtAsc(
+                    user, targetDate, status);
         } else if (category != null && !category.isBlank() && !"ALL".equalsIgnoreCase(category)) {
-            activities = activityRepository.findByScheduleDateAndCategoryIgnoreCaseOrderByStartTimeAscOrderIndexAscCreatedAtAsc(targetDate, category.trim());
+            activities = activityRepository.findByUserAndScheduleDateAndCategoryIgnoreCaseOrderByStartTimeAscOrderIndexAscCreatedAtAsc(
+                    user, targetDate, category.trim());
         } else {
-            activities = activityRepository.findByScheduleDateOrderByStartTimeAscOrderIndexAscCreatedAtAsc(targetDate);
+            activities = activityRepository.findByUserAndScheduleDateOrderByStartTimeAscOrderIndexAscCreatedAtAsc(
+                    user, targetDate);
         }
 
         return activities.stream()
@@ -44,31 +47,33 @@ public class ActivityService {
     }
 
     @Transactional(readOnly = true)
-    public List<ActivityResponse> getActivitiesByDateRange(LocalDate start, LocalDate end) {
+    public List<ActivityResponse> getActivitiesByDateRange(User user, LocalDate start, LocalDate end) {
         LocalDate startDate = (start != null) ? start : LocalDate.now();
         LocalDate endDate = (end != null) ? end : startDate.plusDays(7);
-        return activityRepository.findByScheduleDateBetweenOrderByScheduleDateAscStartTimeAscOrderIndexAsc(startDate, endDate)
+        return activityRepository.findByUserAndScheduleDateBetweenOrderByScheduleDateAscStartTimeAscOrderIndexAsc(
+                        user, startDate, endDate)
                 .stream()
                 .map(ActivityResponse::fromEntity)
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public ActivityResponse getActivityById(Long id) {
-        Activity activity = activityRepository.findById(id)
+    public ActivityResponse getActivityById(User user, Long id) {
+        Activity activity = activityRepository.findByIdAndUser(id, user)
                 .orElseThrow(() -> new ResourceNotFoundException("Activity not found with id: " + id));
         return ActivityResponse.fromEntity(activity);
     }
 
-    public ActivityResponse createActivity(ActivityRequest request) {
+    public ActivityResponse createActivity(User user, ActivityRequest request) {
         Activity activity = new Activity();
+        activity.setUser(user);
         activity.setTitle(request.getTitle().trim());
         activity.setDescription(request.getDescription());
         activity.setScheduleDate(request.getScheduleDate() != null ? request.getScheduleDate() : LocalDate.now());
         activity.setStartTime(request.getStartTime());
         activity.setEndTime(request.getEndTime());
         activity.setStatus(request.getStatus() != null ? request.getStatus() : ActivityStatus.NOT_STARTED);
-        activity.setPriority(request.getPriority() != null ? request.getPriority() : ActivityPriority.MEDIUM);
+        activity.setPriority(request.getPriority() != null ? request.getPriority() : request.getPriority());
         activity.setCategory((request.getCategory() != null && !request.getCategory().isBlank()) ? request.getCategory().trim() : "General");
         activity.setOrderIndex(request.getOrderIndex() != null ? request.getOrderIndex() : 0);
 
@@ -76,8 +81,8 @@ public class ActivityService {
         return ActivityResponse.fromEntity(saved);
     }
 
-    public ActivityResponse updateActivity(Long id, ActivityRequest request) {
-        Activity activity = activityRepository.findById(id)
+    public ActivityResponse updateActivity(User user, Long id, ActivityRequest request) {
+        Activity activity = activityRepository.findByIdAndUser(id, user)
                 .orElseThrow(() -> new ResourceNotFoundException("Activity not found with id: " + id));
 
         activity.setTitle(request.getTitle().trim());
@@ -104,8 +109,8 @@ public class ActivityService {
         return ActivityResponse.fromEntity(updated);
     }
 
-    public ActivityResponse updateStatus(Long id, ActivityStatus status) {
-        Activity activity = activityRepository.findById(id)
+    public ActivityResponse updateStatus(User user, Long id, ActivityStatus status) {
+        Activity activity = activityRepository.findByIdAndUser(id, user)
                 .orElseThrow(() -> new ResourceNotFoundException("Activity not found with id: " + id));
 
         activity.setStatus(status);
@@ -113,20 +118,19 @@ public class ActivityService {
         return ActivityResponse.fromEntity(updated);
     }
 
-    public void deleteActivity(Long id) {
-        if (!activityRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Activity not found with id: " + id);
-        }
-        activityRepository.deleteById(id);
+    public void deleteActivity(User user, Long id) {
+        Activity activity = activityRepository.findByIdAndUser(id, user)
+                .orElseThrow(() -> new ResourceNotFoundException("Activity not found with id: " + id));
+        activityRepository.delete(activity);
     }
 
     @Transactional(readOnly = true)
-    public DailySummaryResponse getDailySummary(LocalDate date) {
+    public DailySummaryResponse getDailySummary(User user, LocalDate date) {
         LocalDate targetDate = (date != null) ? date : LocalDate.now();
-        long total = activityRepository.countByScheduleDate(targetDate);
-        long completed = activityRepository.countByScheduleDateAndStatus(targetDate, ActivityStatus.COMPLETED);
-        long ongoing = activityRepository.countByScheduleDateAndStatus(targetDate, ActivityStatus.ONGOING);
-        long notStarted = activityRepository.countByScheduleDateAndStatus(targetDate, ActivityStatus.NOT_STARTED);
+        long total = activityRepository.countByUserAndScheduleDate(user, targetDate);
+        long completed = activityRepository.countByUserAndScheduleDateAndStatus(user, targetDate, ActivityStatus.COMPLETED);
+        long ongoing = activityRepository.countByUserAndScheduleDateAndStatus(user, targetDate, ActivityStatus.ONGOING);
+        long notStarted = activityRepository.countByUserAndScheduleDateAndStatus(user, targetDate, ActivityStatus.NOT_STARTED);
 
         return new DailySummaryResponse(targetDate, total, completed, ongoing, notStarted);
     }

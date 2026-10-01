@@ -1,5 +1,6 @@
 import React from 'react';
-import { Calendar, Sun, Clock, CheckCircle2, PlayCircle, Circle, FolderKanban, Tag } from 'lucide-react';
+import { Calendar, Sun, Clock, CheckCircle2, PlayCircle, Circle, FolderKanban, Tag, LogOut, User as UserIcon } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 export default function Sidebar({
   selectedDate,
@@ -10,6 +11,8 @@ export default function Sidebar({
   onCategoryFilterChange,
   summary,
 }) {
+  const { user, logout } = useAuth();
+
   const getTodayIso = () => {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -27,14 +30,60 @@ export default function Sidebar({
   const isToday = selectedDate === todayIso;
   const isTomorrow = selectedDate === tomorrowIso;
 
+  const userInitial = user?.name ? user.name.charAt(0).toUpperCase() : 'U';
+
   return (
     <aside className="sidebar">
-      <div className="sidebar-header">
-        <div className="workspace-icon">📅</div>
-        <div>
-          <div className="workspace-name">Daily Schedule</div>
-          <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Personal Workspace</div>
+      {/* Notion Workspace & User Profile */}
+      <div className="sidebar-header" style={{ justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+          <div
+            style={{
+              width: '28px',
+              height: '28px',
+              borderRadius: '50%',
+              backgroundColor: '#37352f',
+              color: 'white',
+              fontSize: '12px',
+              fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}
+          >
+            {userInitial}
+          </div>
+          <div style={{ minWidth: 0 }}>
+            <div
+              className="workspace-name"
+              style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+            >
+              {user?.name || 'Workspace'}
+            </div>
+            <div
+              style={{
+                fontSize: '11px',
+                color: 'var(--text-muted)',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
+              {user?.email}
+            </div>
+          </div>
         </div>
+
+        <button
+          type="button"
+          onClick={logout}
+          className="btn-icon-subtle"
+          title="Sign out"
+          style={{ flexShrink: 0 }}
+        >
+          <LogOut size={13} />
+        </button>
       </div>
 
       <div className="sidebar-section-title">Schedule Views</div>
