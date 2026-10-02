@@ -23,10 +23,10 @@ public class DataInitializer {
                                           ActivityRepository activityRepository,
                                           PasswordEncoder passwordEncoder) {
         return args -> {
-            String demoEmail = "prerit@example.com";
+            String demoEmail = "xyz@example.com";
             User demoUser = userRepository.findByEmailIgnoreCase(demoEmail).orElseGet(() -> {
                 User user = new User();
-                user.setName("Prerit");
+                user.setName("xyz004");
                 user.setEmail(demoEmail);
                 user.setPassword(passwordEncoder.encode("password123"));
                 return userRepository.save(user);

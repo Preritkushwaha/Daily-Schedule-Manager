@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, Lock, Mail, User as UserIcon, ArrowRight, AlertCircle, Sparkles } from 'lucide-react';
+import { Calendar, Lock, Mail, User as UserIcon, ArrowRight, AlertCircle, Sparkles, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function AuthScreen() {
@@ -8,6 +8,9 @@ export default function AuthScreen() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -20,6 +23,7 @@ export default function AuthScreen() {
       if (isRegister) {
         if (!name.trim()) throw new Error('Please enter your name');
         if (password.length < 6) throw new Error('Password must be at least 6 characters');
+        if (password !== confirmPassword) throw new Error('Passwords do not match');
         await register(name.trim(), email.trim(), password);
       } else {
         await login(email.trim(), password);
@@ -35,7 +39,7 @@ export default function AuthScreen() {
     setError(null);
     setLoading(true);
     try {
-      await login('prerit@example.com', 'password123');
+      await login('xyz@example.com', 'password123');
     } catch (err) {
       setError(err.message || 'Demo login failed.');
     } finally {
@@ -128,6 +132,8 @@ export default function AuthScreen() {
             onClick={() => {
               setIsRegister(false);
               setError(null);
+              setPassword('');
+              setConfirmPassword('');
             }}
           >
             Sign in
@@ -148,6 +154,8 @@ export default function AuthScreen() {
             onClick={() => {
               setIsRegister(true);
               setError(null);
+              setPassword('');
+              setConfirmPassword('');
             }}
           >
             Create account
@@ -247,6 +255,7 @@ export default function AuthScreen() {
                 placeholder="name@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
                 style={{
                   border: 'none',
                   outline: 'none',
@@ -284,10 +293,11 @@ export default function AuthScreen() {
             >
               <Lock size={14} color="var(--text-muted)" />
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                autoComplete={isRegister ? 'new-password' : 'current-password'}
                 style={{
                   border: 'none',
                   outline: 'none',
@@ -297,8 +307,84 @@ export default function AuthScreen() {
                 }}
                 required
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  color: 'var(--text-muted)',
+                }}
+                title={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+              </button>
             </div>
           </div>
+
+          {isRegister && (
+            <div>
+              <label
+                style={{
+                  display: 'block',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  color: 'var(--text-secondary)',
+                  marginBottom: '5px',
+                }}
+              >
+                Confirm Password
+              </label>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '6px',
+                  padding: '8px 12px',
+                  background: 'white',
+                }}
+              >
+                <Lock size={14} color="var(--text-muted)" />
+                <input
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  placeholder="••••••••"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  autoComplete="new-password"
+                  style={{
+                    border: 'none',
+                    outline: 'none',
+                    width: '100%',
+                    fontSize: '13px',
+                    background: 'transparent',
+                  }}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    color: 'var(--text-muted)',
+                  }}
+                  title={showConfirmPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showConfirmPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                </button>
+              </div>
+            </div>
+          )}
 
           <button
             type="submit"
@@ -343,7 +429,7 @@ export default function AuthScreen() {
             title="Click to sign in with demo account"
           >
             <Sparkles size={13} color="#f2994a" />
-            <span>Try with Demo Account (Prerit)</span>
+            <span>Try with Demo Account (xyz004)</span>
           </button>
         </div>
       </div>
