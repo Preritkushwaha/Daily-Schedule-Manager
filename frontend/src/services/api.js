@@ -10,7 +10,7 @@ function getAuthHeaders() {
   return headers;
 }
 
-// ----------------- Auth API -----------------
+// Auth API
 
 export async function loginUser(email, password) {
   const res = await fetch(`${API_BASE_URL}/auth/login`, {
@@ -52,7 +52,7 @@ export async function fetchCurrentUser() {
   return res.json();
 }
 
-// ----------------- Activities API (User Scoped) -----------------
+// Activities API (User Scoped)
 
 export async function getActivities(date = null, status = null, category = null) {
   const params = new URLSearchParams();
