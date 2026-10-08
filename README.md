@@ -2,13 +2,6 @@
 
 > A distraction-free, minimalist daily planner inspired by Notion's clean design philosophy and Todoist's fast scheduling workflow, built with Spring Boot, React, PostgreSQL, and Docker, deployed on AWS EC2 with custom domain routing.
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-dailyschedulemanager.prerits.in-blue?style=for-the-badge&logo=googlechrome&logoColor=white)](https://dailyschedulemanager.prerits.in)
-[![AWS EC2](https://img.shields.io/badge/AWS-EC2-orange?style=for-the-badge&logo=amazonec2&logoColor=white)](https://aws.amazon.com/ec2/)
-[![Docker](https://img.shields.io/badge/Docker-Containers-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3%2B-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
-[![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
-[![Neon Database](https://img.shields.io/badge/Neon-PostgreSQL-00E599?style=for-the-badge&logo=postgresql&logoColor=white)](https://neon.tech/)
-
 ---
 
 ## Live Application
@@ -63,38 +56,47 @@
 ## Production Architecture
 
 ```
-                           INTERNET
-                              │
-                              │ HTTPS (Port 443)
-                              ▼
-               dailyschedulemanager.prerits.in
-                              │
-                              │ DNS "A" Record
-                              ▼
-                        Hostinger DNS
-                              │
-                              │ Points to
-                              ▼
-                      AWS Elastic IP (IPv4)
-                              │
-                              ▼
-                     AWS EC2 (Ubuntu 24.04)
-                     ┌──────────────────────────────────────────────┐
-                     │                                              │
-                     │                 NGINX                        │
-                     │          (Host Reverse Proxy)                │
-                     │            SSL Termination                   │
-                     │               /          \                   │
-                     │      Path: / /            \ Path: /api/      │
-                     │             v              v                 │
-                     │       React Docker    Spring Boot Docker     │
-                     │        Container          Container          │
-                     │                               │              │
-                     └───────────────────────────────┼──────────────┘
-                                                     │
-                                                     │ Secure SSL / JDBC
-                                                     ▼
-                                          Neon Serverless PostgreSQL
+                         INTERNET
+                            │
+                       HTTPS : 443
+                            │
+                            ▼
+              dailyschedulemanager.prerits.in
+                            │
+                       DNS A Record
+                            │
+                            ▼
+                      HOSTINGER DNS
+                            │
+                         Points to
+                            ▼
+                    AWS ELASTIC IP
+                            │
+                            ▼
+                 ┌─────────────────────┐
+                 │      AWS EC2        │
+                 │       Ubuntu        │
+                 │                     │
+                 │       NGINX         │
+                 │   Reverse Proxy     │
+                 │   TLS Termination   │
+                 │                     │
+                 │       │             │
+                 │   Docker Compose    │
+                 │       │             │
+                 │   ┌───┴───────┐     │
+                 │   │           │     │
+                 │   ▼           ▼     │
+                 │ React      Spring   │
+                 │ Container  Boot     │
+                 │            Container│
+                 │               │     │
+                 └───────────────┼─────┘
+                                 │
+                           SSL / JDBC
+                                 │
+                                 ▼
+                       NEON POSTGRESQL
 ```
 
 ---
@@ -157,9 +159,5 @@ Both frontend and backend services were containerized using optimized multi-stag
 - **Stateless Token Authentication**: User sessions are authenticated with cryptographically signed JWT tokens.
 
 ---
-
-## Author
-
-**Prerit**
 - Live App: [dailyschedulemanager.prerits.in](https://dailyschedulemanager.prerits.in)
 - Personal Domain: [prerits.in](https://prerits.in)
