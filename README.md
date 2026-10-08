@@ -157,7 +157,3 @@ Both frontend and backend services were containerized using optimized multi-stag
 - **Encrypted Database Communications**: Database queries travel over secure TLS/SSL connections.
 - **Non-Root Containers**: Backend services run under an unprivileged system user inside the container environment.
 - **Stateless Token Authentication**: User sessions are authenticated with cryptographically signed JWT tokens.
-
----
-- Live App: [dailyschedulemanager.prerits.in](https://dailyschedulemanager.prerits.in)
-- Personal Domain: [prerits.in](https://prerits.in)
