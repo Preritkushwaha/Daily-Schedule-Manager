@@ -99,7 +99,7 @@ export default function AuthScreen() {
               marginBottom: '4px',
             }}
           >
-            Daily Schedule
+            Daily Schedule Manager
           </h1>
           <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
             Your private, distraction-free daily planner.
